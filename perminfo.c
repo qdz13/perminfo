@@ -45,7 +45,7 @@ file_perm(char *target, const char *file)
 		if (stbuf.st_mode & S_ISVTX) {
 			special++;
 		}
-		snprintf(target, 6, "%d%o\n", special,
+		snprintf(target, 5, "%d%o", special,
 				(stbuf.st_mode & S_IRWXU) +
 				(stbuf.st_mode & S_IRWXG) +
 				(stbuf.st_mode & S_IRWXO));
