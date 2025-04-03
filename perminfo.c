@@ -272,6 +272,8 @@ main(int argc, char *argv[])
 		usage(EXIT_FAILURE);
 	}
 
+	int string = 1;
+
 	int i;
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
@@ -279,6 +281,13 @@ main(int argc, char *argv[])
 		} else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
 			printf("%s %s\n", progname, version);
 			return EXIT_SUCCESS;
+		} else if (strcmp(argv[i], "--") == 0) {
+			if (argc == 3) {
+				string = 2;
+				break;
+			} else {
+				usage(EXIT_FAILURE);
+			}
 		} else if (*argv[i] == '-') {
 			fprintf(stderr, "%s: Unknown option: \"%s\"\n", progname, argv[i]);
 			return EXIT_FAILURE;
@@ -288,10 +297,10 @@ main(int argc, char *argv[])
 	}
 
 	char perm[5];
-	if (isperm(argv[1])) {
-		strcpy(perm, argv[1]);
+	if (isperm(argv[string])) {
+		strcpy(perm, argv[string]);
 	} else {
-		file_perm(perm, argv[1]);
+		file_perm(perm, argv[string]);
 	}
 
 	char full[10];
