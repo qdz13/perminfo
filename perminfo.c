@@ -3,26 +3,17 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "config.h"
+
 const char *progname = "perminfo";
 const char *version  = "1.0.0";
-
-#define RED     "\033[31m"
-#define GREEN   "\033[32m"
-#define YELLOW  "\033[33m"
-/* #define BLUE    "\033[34m" */
-#define MAGENTA "\033[35m"
-#define CYAN    "\033[36m"
-#define GRAY    "\033[38;5;243m"
-#define BOLD    "\033[1m"
-/* #define LINE    "\033[4m" */
-#define RESET   "\033[0m"
 
 bool
 isperm (const char *s)
 {
 	int i;
-	for (i = 0; *(s+i) != '\0'; i++) {
-		if (*(s+i) < '0' || *(s+i) > '7') {
+	for (i = 0; s[i] != '\0'; i++) {
+		if (s[i] < '0' || s[i] > '7') {
 			return false;
 		}
 	}
@@ -124,27 +115,27 @@ void
 render(const char *s)
 {
 	separator();
-	printf("| %sSymbolic%s   | ", CYAN, RESET);
+	printf("| %sSymbolic%s   | ", COLOR_TYPE, RESET);
 	int i;
 	for (i = 0; s[i] != '\0'; i++) {
 		switch(s[i]) {
 			case 'r':
-				printf("%s%s%c%s", BOLD, YELLOW, s[i], RESET);
+				printf("%s%s%c%s", BOLD, COLOR_READ, s[i], RESET);
 				break;
 			case 'w':
-				printf("%s%s%c%s", BOLD, RED, s[i], RESET);
+				printf("%s%s%c%s", BOLD, COLOR_READ, s[i], RESET);
 				break;
 			case 'x':
-				printf("%s%s%c%s", BOLD, GREEN, s[i], RESET);
+				printf("%s%s%c%s", BOLD, COLOR_EXECUTE, s[i], RESET);
 				break;
 			case 's':
 			case 'S':
 			case 't':
 			case 'T':
-				printf("%s%s%c%s", BOLD, MAGENTA, s[i], RESET);
+				printf("%s%s%c%s", BOLD, COLOR_SPECIAL, s[i], RESET);
 				break;
 			case '-':
-				printf("%s%s%c%s", BOLD, GRAY, s[i], RESET);
+				printf("%s%s%c%s", BOLD, COLOR_GRAYED_OUT, s[i], RESET);
 				break;
 		}
 	}
@@ -154,7 +145,7 @@ render(const char *s)
 	bool sticky = false;
 	for (i = 0; i < 3; i++) {
 		separator();
-		printf("| %s", CYAN);
+		printf("| %s", COLOR_TYPE);
 		switch(i) {
 			case 0:
 				printf("User       ");
@@ -168,23 +159,23 @@ render(const char *s)
 		}
 		printf("%s|", RESET);
 		if (*s == 'r') {
-			printf("%s%s read%s", BOLD, YELLOW, RESET);
+			printf("%s%s read%s", BOLD, COLOR_READ, RESET);
 		} else {
-			printf("%s read%s", GRAY, RESET);
+			printf("%s read%s", COLOR_GRAYED_OUT, RESET);
 		}
 		s++;
 		if (*s == 'w') {
-			printf("%s%s write%s", BOLD, RED, RESET);
+			printf("%s%s write%s", BOLD, COLOR_WRITE, RESET);
 		} else {
-			printf("%s write%s", GRAY, RESET);
+			printf("%s write%s", COLOR_GRAYED_OUT, RESET);
 		}
 		s++;
 		switch(*s) {
 			case 'x':
-				printf("%s%s execute%s", BOLD, GREEN, RESET);
+				printf("%s%s execute%s", BOLD, COLOR_EXECUTE, RESET);
 				break;
 			case 's':
-				printf("%s%s execute%s", BOLD, GREEN, RESET);
+				printf("%s%s execute%s", BOLD, COLOR_EXECUTE, RESET);
 				if (i == 0) {
 					setuid = true;
 				} else {
@@ -192,11 +183,11 @@ render(const char *s)
 				}
 				break;
 			case 't':
-				printf("%s%s execute%s", BOLD, GREEN, RESET);
+				printf("%s%s execute%s", BOLD, COLOR_EXECUTE, RESET);
 				sticky = true;
 				break;
 			case 'S':
-				printf("%s execute%s", GRAY, RESET);
+				printf("%s execute%s", COLOR_GRAYED_OUT, RESET);
 				if (i == 0) {
 					setuid = true;
 				} else {
@@ -204,32 +195,32 @@ render(const char *s)
 				}
 				break;
 			case 'T':
-				printf("%s execute%s", GRAY, RESET);
+				printf("%s execute%s", COLOR_GRAYED_OUT, RESET);
 				sticky = true;
 				break;
 			default:
-				printf("%s execute%s", GRAY, RESET);
+				printf("%s execute%s", COLOR_GRAYED_OUT, RESET);
 				break;
 		}
 		s++;
 		puts("   |");
 	}
 	separator();
-	printf("| %sAttributes%s |", CYAN, RESET);
+	printf("| %sAttributes%s |", COLOR_TYPE, RESET);
 	if (setuid) {
-		printf("%s%s setuid%s", BOLD, MAGENTA, RESET);
+		printf("%s%s setuid%s", BOLD, COLOR_SPECIAL, RESET);
 	} else {
-		printf("%s setuid%s", GRAY, RESET);
+		printf("%s setuid%s", COLOR_GRAYED_OUT, RESET);
 	}
 	if (setgid) {
-		printf("%s%s setgid%s", BOLD, MAGENTA, RESET);
+		printf("%s%s setgid%s", BOLD, COLOR_SPECIAL, RESET);
 	} else {
-		printf("%s setgid%s", GRAY, RESET);
+		printf("%s setgid%s", COLOR_GRAYED_OUT, RESET);
 	}
 	if (sticky) {
-		printf("%s%s sticky%s", BOLD, MAGENTA, RESET);
+		printf("%s%s sticky%s", BOLD, COLOR_SPECIAL, RESET);
 	} else {
-		printf("%s sticky%s", GRAY, RESET);
+		printf("%s sticky%s", COLOR_GRAYED_OUT, RESET);
 	}
 	puts(" |");
 	separator();
