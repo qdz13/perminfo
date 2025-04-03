@@ -241,27 +241,27 @@ int
 main(int argc, char *argv[])
 {
 	if (argc == 1) {
-		usage(1);
+		usage(EXIT_FAILURE);
 	}
 
 	int i;
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-			usage(0);
+			usage(EXIT_SUCCESS);
 		} else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
 			printf("%s %s\n", progname, version);
-			return 0;
+			return EXIT_SUCCESS;
 		} else if (*argv[i] == '-') {
 			fprintf(stderr, "%s: Unknown option: \"%s\"\n", progname, argv[i]);
-			return 1;
+			return EXIT_FAILURE;
 		} else if (argc != 2) {
-			usage(1);
+			usage(EXIT_FAILURE);
 		}
 	}
 
 	if (!isperm(argv[1])) {
 		fprintf(stderr, "%s: Invalid file mode: %s\n", progname, argv[1]);
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	char full[10];
@@ -269,5 +269,5 @@ main(int argc, char *argv[])
 
 	render(full);
 
-	return 0;
+	return EXIT_SUCCESS;
 }
