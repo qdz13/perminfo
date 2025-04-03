@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 
 #include "config.h"
 
@@ -22,6 +23,32 @@ isperm (const char *s)
 		return false;
 
 	return true;
+}
+
+void
+file_perm(char *target, const char *file)
+{
+		struct stat stbuf;
+
+		if (stat(file, &stbuf) == -1) {
+			fprintf(stderr, "%s: No such file or directory\n", progname);
+			exit(EXIT_FAILURE);
+		}
+
+		int special = 0;
+		if (stbuf.st_mode & S_ISUID) {
+			special += 4;
+		}
+		if (stbuf.st_mode & S_ISGID) {
+			special += 2;
+		}
+		if (stbuf.st_mode & S_ISVTX) {
+			special++;
+		}
+		snprintf(target, 5, "%d%o\n", special,
+				(stbuf.st_mode & S_IRWXU) +
+				(stbuf.st_mode & S_IRWXG) +
+				(stbuf.st_mode & S_IRWXO));
 }
 
 void
@@ -230,6 +257,7 @@ void
 usage(int status)
 {
 	fprintf(stderr, "Usage: %s [OPTIONS] [PERMISSION]\n", progname);
+	fprintf(stderr, "       %s [OPTIONS] [FILE]\n", progname);
 	fprintf(stderr, "\n"
 			"Options:\n"
 			"  -h, --help    Display this help message and exit\n"
@@ -259,13 +287,15 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (!isperm(argv[1])) {
-		fprintf(stderr, "%s: Invalid file mode: %s\n", progname, argv[1]);
-		return EXIT_FAILURE;
+	char perm[5];
+	if (isperm(argv[1])) {
+		strcpy(perm, argv[1]);
+	} else {
+		file_perm(perm, argv[1]);
 	}
 
 	char full[10];
-	tosymbolic(full, argv[1]);
+	tosymbolic(full, perm);
 
 	render(full);
 
