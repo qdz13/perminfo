@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 
@@ -131,20 +132,10 @@ tosymbolic(char *target, const char *n)
 }
 
 void
-separator(void)
-{
-	int i;
-	for (i = 0; i < 37; i++) {
-		putchar('-');
-	}
-	putchar('\n');
-}
-
-void
 render(const char *s, const bool isdir)
 {
-	separator();
-	printf("| %sSymbolic%s   | ", COLOR_TYPE, RESET);
+	printf("┌────────────┬──────────────────────┐\n");
+	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
 	if (isdir) {
 		printf("%s%s%c%s", BOLD, COLOR_DIRECTORY, 'd', RESET);
 	}
@@ -174,13 +165,13 @@ render(const char *s, const bool isdir)
 	if (!isdir) {
 		putchar(' ');
 	}
-	puts("           |");
+	puts("           │");
 	bool setuid = false;
 	bool setgid = false;
 	bool sticky = false;
 	for (i = 0; i < 3; i++) {
-		separator();
-		printf("| %s", COLOR_TYPE);
+		printf("├────────────┼──────────────────────┤\n");
+		printf("│ %s", COLOR_TYPE);
 		switch(i) {
 			case 0:
 				printf("User       ");
@@ -192,7 +183,7 @@ render(const char *s, const bool isdir)
 				printf("Others     ");
 				break;
 		}
-		printf("%s|", RESET);
+		printf("%s│", RESET);
 		if (*s == 'r') {
 			printf("%s%s read%s", BOLD, COLOR_READ, RESET);
 		} else {
@@ -238,10 +229,10 @@ render(const char *s, const bool isdir)
 				break;
 		}
 		s++;
-		puts("   |");
+		printf("   │\n");
 	}
-	separator();
-	printf("| %sAttributes%s |", COLOR_TYPE, RESET);
+	printf("├────────────┼──────────────────────┤\n");
+	printf("│ %sAttributes%s │", COLOR_TYPE, RESET);
 	if (setuid) {
 		printf("%s%s setuid%s", BOLD, COLOR_SPECIAL, RESET);
 	} else {
@@ -257,8 +248,8 @@ render(const char *s, const bool isdir)
 	} else {
 		printf("%s sticky%s", COLOR_GRAYED_OUT, RESET);
 	}
-	puts(" |");
-	separator();
+	printf(" │\n");
+	printf("└────────────┴──────────────────────┘\n");
 }
 
 void
