@@ -1,5 +1,6 @@
 # perminfo
 perminfo is simple tool for displaying file permissions written in C.
+<img src="preview.png" width="600">
 
 ## Installation
 ```sh
