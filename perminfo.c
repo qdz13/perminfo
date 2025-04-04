@@ -150,7 +150,7 @@ render(const char *s)
 				printf("%s%s%c%s", BOLD, COLOR_READ, s[i], RESET);
 				break;
 			case 'w':
-				printf("%s%s%c%s", BOLD, COLOR_READ, s[i], RESET);
+				printf("%s%s%c%s", BOLD, COLOR_WRITE, s[i], RESET);
 				break;
 			case 'x':
 				printf("%s%s%c%s", BOLD, COLOR_EXECUTE, s[i], RESET);
