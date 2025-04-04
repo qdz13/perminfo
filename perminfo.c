@@ -50,7 +50,7 @@ file_perm(char *target, const char *file, bool *isdir)
 				(stbuf.st_mode & S_IRWXG) +
 				(stbuf.st_mode & S_IRWXO));
 
-		*isdir = (S_ISDIR(stbuf.st_mode)) ? true : false;
+		*isdir = S_ISDIR(stbuf.st_mode);
 }
 
 void
