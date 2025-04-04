@@ -26,7 +26,7 @@ isperm (const char *s)
 }
 
 void
-file_perm(char *target, const char *file)
+file_perm(char *target, const char *file, bool *isdir)
 {
 		struct stat stbuf;
 
@@ -49,6 +49,8 @@ file_perm(char *target, const char *file)
 				(stbuf.st_mode & S_IRWXU) +
 				(stbuf.st_mode & S_IRWXG) +
 				(stbuf.st_mode & S_IRWXO));
+
+		*isdir = (S_ISDIR(stbuf.st_mode)) ? true : false;
 }
 
 void
@@ -139,10 +141,13 @@ separator(void)
 }
 
 void
-render(const char *s)
+render(const char *s, const bool isdir)
 {
 	separator();
 	printf("| %sSymbolic%s   | ", COLOR_TYPE, RESET);
+	if (isdir) {
+		printf("%s%s%c%s", BOLD, COLOR_DIRECTORY, 'd', RESET);
+	}
 	int i;
 	for (i = 0; s[i] != '\0'; i++) {
 		switch(s[i]) {
@@ -166,7 +171,10 @@ render(const char *s)
 				break;
 		}
 	}
-	puts("            |");
+	if (!isdir) {
+		putchar(' ');
+	}
+	puts("           |");
 	bool setuid = false;
 	bool setgid = false;
 	bool sticky = false;
@@ -297,16 +305,17 @@ main(int argc, char *argv[])
 	}
 
 	char perm[5];
+	bool isdir = false;
 	if (isperm(argv[string])) {
 		strcpy(perm, argv[string]);
 	} else {
-		file_perm(perm, argv[string]);
+		file_perm(perm, argv[string], &isdir);
 	}
 
 	char full[10];
 	tosymbolic(full, perm);
 
-	render(full);
+	render(full, isdir);
 
 	return EXIT_SUCCESS;
 }
