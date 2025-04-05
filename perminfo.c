@@ -20,8 +20,9 @@ isperm (const char *s)
 		}
 	}
 
-	if (strlen(s) < 3 || strlen(s) > 4)
+	if (strlen(s) < 3 || strlen(s) > 4) {
 		return false;
+	}
 
 	return true;
 }
@@ -101,17 +102,23 @@ setspecial(const char n, bool *setuid, bool *setgid, bool *sticky)
 	if (n == '4' ||
 		n == '5' ||
 		n == '6' ||
-		n == '7') *setuid = true;
+		n == '7') {
+		*setuid = true;
+	}
 
 	if (n == '2' ||
 		n == '3' ||
 		n == '6' ||
-		n == '7') *setgid = true;
+		n == '7') {
+		*setgid = true;
+	}
 
 	if (n == '1' ||
 		n == '3' ||
 		n == '5' ||
-		n == '7') *sticky = true;
+		n == '7') {
+		*sticky = true;
+	}
 }
 
 void
