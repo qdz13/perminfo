@@ -134,7 +134,7 @@ tosymbolic(char *target, const char *n)
 void
 render(const char *s, const bool isdir)
 {
-	printf("┌────────────┬──────────────────────┐\n");
+	puts("┌────────────┬──────────────────────┐");
 	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
 	if (isdir) {
 		printf("%s%s%c%s", BOLD, COLOR_DIRECTORY, 'd', RESET);
@@ -170,7 +170,7 @@ render(const char *s, const bool isdir)
 	bool setgid = false;
 	bool sticky = false;
 	for (i = 0; i < 3; i++) {
-		printf("├────────────┼──────────────────────┤\n");
+		puts("├────────────┼──────────────────────┤");
 		printf("│ %s", COLOR_TYPE);
 		switch(i) {
 			case 0:
@@ -229,9 +229,9 @@ render(const char *s, const bool isdir)
 				break;
 		}
 		s++;
-		printf("   │\n");
+		puts("   │");
 	}
-	printf("├────────────┼──────────────────────┤\n");
+	puts("├────────────┼──────────────────────┤");
 	printf("│ %sAttributes%s │", COLOR_TYPE, RESET);
 	if (setuid) {
 		printf("%s%s setuid%s", BOLD, COLOR_SPECIAL, RESET);
@@ -248,8 +248,8 @@ render(const char *s, const bool isdir)
 	} else {
 		printf("%s sticky%s", COLOR_GRAYED_OUT, RESET);
 	}
-	printf(" │\n");
-	printf("└────────────┴──────────────────────┘\n");
+	puts(" │");
+	puts("└────────────┴──────────────────────┘");
 }
 
 void
