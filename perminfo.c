@@ -143,7 +143,7 @@ render(const char *s, const bool isdir)
 	puts("┌────────────┬──────────────────────┐");
 	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
 	if (isdir) {
-		printf("%s%s%c%s", BOLD, COLOR_DIRECTORY, 'd', RESET);
+		printf("%s%sd%s", BOLD, COLOR_DIRECTORY, RESET);
 	}
 	int i;
 	for (i = 0; s[i] != '\0'; i++) {
