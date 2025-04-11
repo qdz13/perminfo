@@ -304,7 +304,7 @@ main(int argc, char *argv[])
 	char perm[5];
 	bool isdir = false;
 	if (isperm(argv[string])) {
-		strncpy(perm, argv[string], 5);
+		strcpy(perm, argv[string]);
 	} else {
 		file_perm(perm, argv[string], &isdir);
 	}
