@@ -4,7 +4,7 @@ CC = cc
 all: perminfo
 
 perminfo:
-	${CC} -O3 -o $@ perminfo.c
+	${CC} -Wall -Wextra -O3 -o $@ perminfo.c
 	
 install: perminfo
 	mkdir -p ${DESTDIR}${PREFIX}/bin
