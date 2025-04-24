@@ -10,7 +10,7 @@ const char *progname = "perminfo";
 const char *version  = "1.0.0";
 
 bool
-isperm (const char *s)
+isperm(const char *s)
 {
 	int i;
 	for (i = 0; s[i] != '\0'; i++) {
