@@ -3,11 +3,21 @@
 #include <string.h>
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "1.0.0";
+const char *version  = "1.1.0";
+
+void
+set_currentdir(char *target)
+{
+	if (!getcwd(target, sizeof(char) * PATH_MAX)) {
+		fprintf(stderr, "%s: Failed to get current directory\n", progname);
+		exit(EXIT_FAILURE);
+	}
+}
 
 bool
 isperm(const char *s)
@@ -273,10 +283,6 @@ usage(int status)
 int
 main(int argc, char *argv[])
 {
-	if (argc == 1) {
-		usage(EXIT_FAILURE);
-	}
-
 	int string = 1;
 
 	int i;
@@ -303,7 +309,11 @@ main(int argc, char *argv[])
 
 	char perm[5];
 	bool isdir = false;
-	if (isperm(argv[string])) {
+	if (argc == 1) {
+		char currentdir[PATH_MAX];
+		set_currentdir(currentdir);
+		file_perm(perm, currentdir, &isdir);
+	} else if (isperm(argv[string])) {
 		strcpy(perm, argv[string]);
 	} else {
 		file_perm(perm, argv[string], &isdir);
