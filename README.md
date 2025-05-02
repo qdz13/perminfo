@@ -1,5 +1,6 @@
 # perminfo
 [English] | [日本語](README-ja.md)
+
 perminfo is simple tool for displaying file permissions written in C.
 <img src="preview.png" width="600">
 

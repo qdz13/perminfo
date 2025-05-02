@@ -1,5 +1,6 @@
 # perminfo
 [English](README.md) | [日本語]
+
 perminfoはC言語で書かれた、ファイルのパーミッションを表示するシンプルなツールです。
 <img src="preview.png" width="600">
 
