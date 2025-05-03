@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef __FreeBSD__
+#include <syslimits.h>
+#endif
 
 #include "config.h"
 
