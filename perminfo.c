@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #ifdef __FreeBSD__
-#include <syslimits.h>
+#include <limits.h>
 #endif
 
 #include "config.h"
