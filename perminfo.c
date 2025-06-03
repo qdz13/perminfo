@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "config.h"
 
@@ -13,7 +14,7 @@ const char *version  = "1.1.0";
 void
 set_currentdir(char *target)
 {
-	if (!getwd(target)) {
+	if (!getcwd(target, sizeof(char) * PATH_MAX + 1)) {
 		fprintf(stderr, "%s: Failed to get current directory\n", progname);
 		exit(EXIT_FAILURE);
 	}
@@ -310,7 +311,7 @@ main(int argc, char *argv[])
 	char perm[5];
 	bool isdir = false;
 	if (argc == 1) {
-		char currentdir[PATH_MAX];
+		char currentdir[PATH_MAX + 1];
 		set_currentdir(currentdir);
 		file_perm(perm, currentdir, &isdir);
 	} else if (isperm(argv[string])) {
