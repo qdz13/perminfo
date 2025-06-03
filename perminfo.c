@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <limits.h>
 
 #include "config.h"
 
@@ -14,7 +13,7 @@ const char *version  = "1.1.0";
 void
 set_currentdir(char *target)
 {
-	if (!getcwd(target, sizeof(char) * PATH_MAX)) {
+	if (!getwd(target)) {
 		fprintf(stderr, "%s: Failed to get current directory\n", progname);
 		exit(EXIT_FAILURE);
 	}
