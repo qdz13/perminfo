@@ -14,7 +14,7 @@ const char *version  = "1.1.0";
 void
 set_currentdir(char *target)
 {
-	if (!getcwd(target, sizeof(char) * (PATH_MAX + 1))) {
+	if (!getcwd(target, PATH_MAX + 1)) {
 		fprintf(stderr, "%s: Failed to get current directory\n", progname);
 		exit(EXIT_FAILURE);
 	}
