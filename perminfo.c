@@ -275,7 +275,7 @@ usage(int status)
 	fprintf(stderr, "       %s [OPTIONS] [FILE]\n", progname);
 	fprintf(stderr, "\n"
 			"Options:\n"
-			"  -h, --help    Display this help message and exit\n"
+			"  -h, --help    Display this help message and exit\n");
 	exit(status);
 }
 
