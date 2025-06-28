@@ -9,7 +9,6 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "1.1.0";
 
 void
 set_currentdir(char *target)
@@ -277,7 +276,6 @@ usage(int status)
 	fprintf(stderr, "\n"
 			"Options:\n"
 			"  -h, --help    Display this help message and exit\n"
-			"  -v, --version Display version information and exit\n");
 	exit(status);
 }
 
@@ -290,9 +288,6 @@ main(int argc, char *argv[])
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			usage(EXIT_SUCCESS);
-		} else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
-			printf("%s %s\n", progname, version);
-			return EXIT_SUCCESS;
 		} else if (strcmp(argv[i], "--") == 0) {
 			if (argc == 3) {
 				string = 2;
