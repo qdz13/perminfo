@@ -1,6 +1,6 @@
 PREFIX = /usr/local
 CC = cc
-CFLAGS = -Wall -Wextra -O3
+CFLAGS = -Wall -Wextra -O2
 
 all: perminfo
 
