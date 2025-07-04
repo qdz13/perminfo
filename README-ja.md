@@ -2,7 +2,7 @@
 [English](README.md) | 日本語
 
 perminfoはC言語で書かれた、ファイルのパーミッションを表示するシンプルなツールです。
-<img src="preview.png" width="600">
+<img src="preview.jpg" width="600">
 
 ## インストール
 ```sh
