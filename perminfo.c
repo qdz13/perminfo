@@ -10,7 +10,7 @@
 
 const char *progname = "perminfo";
 
-char *
+const char *
 set_currentdir(void)
 {
 	static char path[PATH_MAX + 1];
