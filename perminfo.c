@@ -11,7 +11,7 @@
 const char *progname = "perminfo";
 
 const char *
-set_currentdir(void)
+get_currentdir(void)
 {
 	static char path[PATH_MAX + 1];
 	if (!getcwd(path, PATH_MAX + 1)) {
@@ -308,7 +308,7 @@ main(int argc, char *argv[])
 	char perm[5];
 	bool isdir = false;
 	if (argc == 1) {
-		file_perm(perm, set_currentdir(), &isdir);
+		file_perm(perm, get_currentdir(), &isdir);
 	} else if (isperm(argv[string])) {
 		strcpy(perm, argv[string]);
 	} else {
