@@ -10,13 +10,15 @@
 
 const char *progname = "perminfo";
 
-void
-set_currentdir(char *target)
+char *
+set_currentdir(void)
 {
-	if (!getcwd(target, PATH_MAX + 1)) {
+	static char path[PATH_MAX + 1];
+	if (!getcwd(path, PATH_MAX + 1)) {
 		fprintf(stderr, "%s: Failed to get current directory\n", progname);
 		exit(EXIT_FAILURE);
 	}
+	return path;
 }
 
 bool
@@ -306,9 +308,7 @@ main(int argc, char *argv[])
 	char perm[5];
 	bool isdir = false;
 	if (argc == 1) {
-		char currentdir[PATH_MAX + 1];
-		set_currentdir(currentdir);
-		file_perm(perm, currentdir, &isdir);
+		file_perm(perm, set_currentdir(), &isdir);
 	} else if (isperm(argv[string])) {
 		strcpy(perm, argv[string]);
 	} else {
