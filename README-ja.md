@@ -15,5 +15,5 @@ $ sudo make install
 ## 使い方
 * パーミッションを表示: `perminfo 755`
 * ファイルのパーミッションを表示: `perminfo example.txt`
-* ディレクトリのパーミッションを表示: `perminfo /`
+* ディレクトリのパーミッションを表示: `perminfo /path/to/dir`
 * ヘルプメッセージを表示: `perminfo --help`
