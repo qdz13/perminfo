@@ -310,7 +310,7 @@ main(int argc, char *argv[])
 	if (argc == 1) {
 		file_perm(perm, get_currentdir(), &isdir);
 	} else if (isperm(argv[string])) {
-		strcpy(perm, argv[string]);
+		strncpy(perm, argv[string], sizeof(perm));
 	} else {
 		file_perm(perm, argv[string], &isdir);
 	}
