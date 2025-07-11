@@ -7,7 +7,7 @@ perminfoはC言語で書かれた、ファイルのパーミッションを表�
 
 ## インストール
 ```sh
-$ git clone https://github.com/qdz13/perminfo
+$ git clone https://github.com/qdz13/perminfo.git
 $ cd perminfo
 $ sudo make install
 ```
