@@ -39,7 +39,7 @@ isperm(const char *s)
 }
 
 void
-file_perm(char *target, const char *file, bool *isdir)
+file_perm(char *target, const size_t len, const char *file, bool *isdir)
 {
 		struct stat stbuf;
 
@@ -58,7 +58,7 @@ file_perm(char *target, const char *file, bool *isdir)
 		if (stbuf.st_mode & S_ISVTX) {
 			special++;
 		}
-		snprintf(target, 5, "%d%o", special,
+		snprintf(target, len, "%d%o", special,
 				(stbuf.st_mode & S_IRWXU) +
 				(stbuf.st_mode & S_IRWXG) +
 				(stbuf.st_mode & S_IRWXO));
@@ -308,11 +308,11 @@ main(int argc, char *argv[])
 	char perm[5];
 	bool isdir = false;
 	if (argc == 1) {
-		file_perm(perm, get_currentdir(), &isdir);
+		file_perm(perm, sizeof(perm), get_currentdir(), &isdir);
 	} else if (isperm(argv[string])) {
 		strncpy(perm, argv[string], sizeof(perm));
 	} else {
-		file_perm(perm, argv[string], &isdir);
+		file_perm(perm, sizeof(perm), argv[string], &isdir);
 	}
 
 	char full[10];
