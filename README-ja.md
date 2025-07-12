@@ -7,9 +7,9 @@ perminfoはC言語で書かれた、ファイルのパーミッションを表�
 
 ## インストール
 ```sh
-$ git clone https://github.com/qdz13/perminfo.git
-$ cd perminfo
-$ sudo make install
+git clone https://github.com/qdz13/perminfo.git
+cd perminfo
+sudo make install
 ```
 色はconfig.hを編集することで変更できます。
 
