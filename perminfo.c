@@ -284,7 +284,12 @@ usage(int status)
 int
 main(int argc, char *argv[])
 {
-	int string = 1;
+	int pos;
+	if (argc == 1) {
+		pos = 0; /* No arguments */
+	} else {
+		pos = 1; /* argv[1] */
+	}
 
 	int i;
 	for (i = 1; i < argc; i++) {
@@ -292,7 +297,7 @@ main(int argc, char *argv[])
 			usage(EXIT_SUCCESS);
 		} else if (strcmp(argv[i], "--") == 0) {
 			if (argc == 3) {
-				string = 2;
+				pos = 2; /* argv[2] */
 				break;
 			} else {
 				usage(EXIT_FAILURE);
@@ -307,12 +312,12 @@ main(int argc, char *argv[])
 
 	char perm[5];
 	bool isdir = false;
-	if (argc == 1) {
+	if (pos == 0) {
 		file_perm(perm, sizeof(perm), get_currentdir(), &isdir);
-	} else if (isperm(argv[string])) {
-		strncpy(perm, argv[string], sizeof(perm));
+	} else if (isperm(argv[pos])) {
+		strncpy(perm, argv[pos], sizeof(perm));
 	} else {
-		file_perm(perm, sizeof(perm), argv[string], &isdir);
+		file_perm(perm, sizeof(perm), argv[pos], &isdir);
 	}
 
 	char full[10];
