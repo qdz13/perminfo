@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <limits.h>
+#include <errno.h>
 
 #include "config.h"
 
@@ -44,7 +45,7 @@ file_perm(char *target, const size_t len, const char *file, bool *isdir)
 		struct stat stbuf;
 
 		if (stat(file, &stbuf) == -1) {
-			fprintf(stderr, "%s: %s: No such file or directory\n", progname, file);
+			fprintf(stderr, "%s: %s: %s\n", progname, file, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 
