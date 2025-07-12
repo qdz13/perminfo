@@ -1,6 +1,7 @@
 PREFIX = /usr/local
 CC = cc
 CFLAGS = -Wall -Wextra -O2
+RM = rm -f
 
 all: perminfo
 
@@ -12,9 +13,9 @@ install: perminfo
 	install -Dm755 perminfo ${DESTDIR}${PREFIX}/bin/perminfo
 
 uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/perminfo
+	${RM} ${DESTDIR}${PREFIX}/bin/perminfo
 
 clean:
-	rm -f perminfo
+	${RM} perminfo
 
 .PHONY: all install uninstall clean
