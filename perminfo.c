@@ -44,7 +44,7 @@ file_perm(char *target, const size_t len, const char *file, bool *isdir)
 		struct stat stbuf;
 
 		if (stat(file, &stbuf) == -1) {
-			fprintf(stderr, "%s: No such file or directory\n", progname);
+			fprintf(stderr, "%s: %s: No such file or directory\n", progname, file);
 			exit(EXIT_FAILURE);
 		}
 
