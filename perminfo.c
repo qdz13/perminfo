@@ -92,17 +92,9 @@ set_rwx(char *target, const char n, const bool special, const char lower, const 
 		n == '3' ||
 		n == '5' ||
 		n == '7') {
-		if (special) {
-			target[2] = lower;
-		} else {
-			target[2] = 'x';
-		}
+		target[2] = special ? lower : 'x';
 	} else {
-		if (special) {
-			target[2] = upper;
-		} else {
-			target[2] = '-';
-		}
+		target[2] = special ? upper : '-';
 	}
 
 	target[3] = '\0';
