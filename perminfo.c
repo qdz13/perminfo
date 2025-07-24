@@ -264,13 +264,15 @@ render(const char *s, const bool isdir)
 }
 
 void
-usage(int status)
+usage(const int status)
 {
-	fprintf(stderr, "Usage: %s [OPTIONS] [PERMISSION]\n", progname);
-	fprintf(stderr, "       %s [OPTIONS] [FILE]\n", progname);
-	fprintf(stderr, "\n"
+	fprintf(stderr,
+			"Usage: %s [OPTIONS] [PERMISSION]\n"
+			"       %s [OPTIONS] [FILE]\n"
+			"\n"
 			"Options:\n"
-			"  -h, --help    Display this help message and exit\n");
+			"  -h, --help    Display this help message and exit\n",
+			progname, progname);
 	exit(status);
 }
 
