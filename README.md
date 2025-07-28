@@ -9,6 +9,7 @@ perminfo is simple tool for displaying file permissions written in C.
 ```sh
 git clone https://github.com/qdz13/perminfo.git
 cd perminfo
+make
 sudo make install
 ```
 The colors can be changed by editing config.h.
