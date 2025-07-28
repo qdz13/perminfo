@@ -137,9 +137,9 @@ tosymbolic(char *target, const char *n)
 		n++;
 	}
 
-	set_rwx(target,     *n,     setuid, 's', 'S');
-	set_rwx(&target[3], *(n+1), setgid, 's', 'S');
-	set_rwx(&target[6], *(n+2), sticky, 't', 'T');
+	set_rwx(target,     *n,       setuid, 's', 'S');
+	set_rwx(&target[3], *(n + 1), setgid, 's', 'S');
+	set_rwx(&target[6], *(n + 2), sticky, 't', 'T');
 }
 
 void
