@@ -11,7 +11,7 @@
 
 const char *progname = "perminfo";
 
-struct _permission {
+struct _rwx {
 	bool read;
 	bool write;
 	bool execute;
@@ -23,11 +23,11 @@ struct _special {
 	bool sticky;
 };
 
-struct _octal {
+struct _permission {
 	bool isdir;
-	struct _permission user;
-	struct _permission group;
-	struct _permission others;
+	struct _rwx user;
+	struct _rwx group;
+	struct _rwx others;
 	struct _special special;
 };
 
@@ -72,7 +72,7 @@ set_execute(const char *perm)
 }
 
 void
-set_perm(const int octalnum, struct _octal *ptr)
+set_perm(const int octalnum, struct _permission *ptr)
 {
 	char perm[4];
 	snprintf(perm, sizeof(perm), "%o", octalnum);
@@ -94,7 +94,7 @@ set_perm(const int octalnum, struct _octal *ptr)
 }
 
 void
-get(const char *file, struct _octal *ptr)
+get(const char *file, struct _permission *ptr)
 {
 	struct stat stbuf;
 
@@ -182,7 +182,7 @@ render_special(const bool b, const char *s)
 }
 
 void
-render(struct _octal *ptr)
+render(struct _permission *ptr)
 {
 	puts("┌────────────┬──────────────────────┐");
 	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
@@ -228,7 +228,7 @@ render(struct _octal *ptr)
 void
 run(const char *file)
 {
-	struct _octal octal;
+	struct _permission octal;
 	get(file, &octal);
 	render(&octal);
 }
