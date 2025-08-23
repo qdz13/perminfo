@@ -31,6 +31,12 @@ struct _permission {
 	struct _special special;
 };
 
+enum Rwx {
+	READ,
+	WRITE,
+	EXECUTE
+};
+
 const char *
 get_currentdir(void)
 {
@@ -45,30 +51,25 @@ get_currentdir(void)
 }
 
 bool
-set_read(const char *perm)
+set_rwx(enum Rwx rwx, const char *perm)
 {
-	return ('4' == *perm ||
-			'5' == *perm ||
-			'6' == *perm ||
-			'7' == *perm);
-}
-
-bool
-set_write(const char *perm)
-{
-	return ('2' == *perm ||
-			'3' == *perm ||
-			'6' == *perm ||
-			'7' == *perm);
-}
-
-bool
-set_execute(const char *perm)
-{
-	return ('1' == *perm ||
-			'3' == *perm ||
-			'5' == *perm ||
-			'7' == *perm);
+	switch (rwx) {
+		case READ:
+			return ('4' == *perm ||
+					'5' == *perm ||
+					'6' == *perm ||
+					'7' == *perm);
+		case WRITE:
+			return ('2' == *perm ||
+					'3' == *perm ||
+					'6' == *perm ||
+					'7' == *perm);
+		case EXECUTE:
+			return ('1' == *perm ||
+					'3' == *perm ||
+					'5' == *perm ||
+					'7' == *perm);
+	}
 }
 
 void
@@ -78,19 +79,19 @@ set_perm(const int octalnum, struct _permission *ptr)
 	snprintf(perm, sizeof(perm), "%o", octalnum);
 
 	/* user */
-	ptr->user.read      = set_read(perm);
-	ptr->user.write     = set_write(perm);
-	ptr->user.execute   = set_execute(perm);
+	ptr->user.read      = set_rwx(READ, perm);
+	ptr->user.write     = set_rwx(WRITE, perm);
+	ptr->user.execute   = set_rwx(EXECUTE, perm);
 
 	/* group */
-	ptr->group.read     = set_read(&perm[1]);
-	ptr->group.write    = set_write(&perm[1]);
-	ptr->group.execute  = set_execute(&perm[1]);
+	ptr->group.read     = set_rwx(READ, &perm[1]);
+	ptr->group.write    = set_rwx(WRITE, &perm[1]);
+	ptr->group.execute  = set_rwx(EXECUTE, &perm[1]);
 
 	/* others */
-	ptr->others.read    = set_read(&perm[2]);
-	ptr->others.write   = set_write(&perm[2]);
-	ptr->others.execute = set_execute(&perm[2]);
+	ptr->others.read    = set_rwx(READ, &perm[2]);
+	ptr->others.write   = set_rwx(WRITE, &perm[2]);
+	ptr->others.execute = set_rwx(EXECUTE, &perm[2]);
 }
 
 void
