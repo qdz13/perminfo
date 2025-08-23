@@ -51,9 +51,9 @@ get_currentdir(void)
 }
 
 bool
-set_rwx(enum Rwx rwx, const char *perm)
+set_rwx(enum Rwx type, const char *perm)
 {
-	switch (rwx) {
+	switch (type) {
 		case READ:
 			return ('4' == *perm ||
 					'5' == *perm ||
