@@ -238,9 +238,9 @@ void
 usage(const int status)
 {
 	fprintf(stderr,
-			"Usage: %s [OPTIONS] [FILE]...\n"
+			"Usage: %s [OPTION] [FILE]...\n"
 			"\n"
-			"Options:\n"
+			"Option:\n"
 			"  -h, --help    Display this help message and exit\n",
 			progname);
 	exit(status);
