@@ -36,7 +36,7 @@ get_currentdir(void)
 {
 	static char path[PATH_MAX + 1];
 
-	if (!getcwd(path, PATH_MAX + 1)) {
+	if (!getcwd(path, sizeof(path))) {
 		fprintf(stderr, "%s: Failed to get current directory\n", progname);
 		exit(EXIT_FAILURE);
 	}
