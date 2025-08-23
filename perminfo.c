@@ -1,274 +1,243 @@
+#include <errno.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <limits.h>
-#include <errno.h>
 
 #include "config.h"
 
 const char *progname = "perminfo";
 
+struct _permission {
+	bool read;
+	bool write;
+	bool execute;
+};
+
+struct _special {
+	bool setuid;
+	bool setgid;
+	bool sticky;
+};
+
+struct _octal {
+	bool isdir;
+	struct _permission user;
+	struct _permission group;
+	struct _permission others;
+	struct _special special;
+};
+
 const char *
 get_currentdir(void)
 {
 	static char path[PATH_MAX + 1];
+
 	if (!getcwd(path, PATH_MAX + 1)) {
 		fprintf(stderr, "%s: Failed to get current directory\n", progname);
 		exit(EXIT_FAILURE);
 	}
+
 	return path;
 }
 
 bool
-isperm(const char *s)
+set_read(const char *perm)
 {
-	int i;
-	for (i = 0; s[i] != '\0'; i++) {
-		if (s[i] < '0' || s[i] > '7') {
-			return false;
-		}
-	}
+	return ('4' == *perm ||
+			'5' == *perm ||
+			'6' == *perm ||
+			'7' == *perm);
+}
 
-	if (strlen(s) < 3 || strlen(s) > 4) {
-		return false;
-	}
+bool
+set_write(const char *perm)
+{
+	return ('2' == *perm ||
+			'3' == *perm ||
+			'6' == *perm ||
+			'7' == *perm);
+}
 
-	return true;
+bool
+set_execute(const char *perm)
+{
+	return ('1' == *perm ||
+			'3' == *perm ||
+			'5' == *perm ||
+			'7' == *perm);
 }
 
 void
-file_perm(char *target, const size_t len, const char *file, bool *isdir)
+set_perm(const int octalnum, struct _octal *ptr)
 {
-		struct stat stbuf;
+	char perm[4];
+	snprintf(perm, sizeof(perm), "%o", octalnum);
 
-		if (stat(file, &stbuf) == -1) {
-			fprintf(stderr, "%s: %s: %s\n", progname, file, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
+	/* user */
+	ptr->user.read      = set_read(perm);
+	ptr->user.write     = set_write(perm);
+	ptr->user.execute   = set_execute(perm);
 
-		int special = 0;
-		if (stbuf.st_mode & S_ISUID) {
-			special += 4;
-		}
-		if (stbuf.st_mode & S_ISGID) {
-			special += 2;
-		}
-		if (stbuf.st_mode & S_ISVTX) {
-			special++;
-		}
-		snprintf(target, len, "%d%o", special,
-				(stbuf.st_mode & S_IRWXU) +
-				(stbuf.st_mode & S_IRWXG) +
-				(stbuf.st_mode & S_IRWXO));
+	/* group */
+	ptr->group.read     = set_read(&perm[1]);
+	ptr->group.write    = set_write(&perm[1]);
+	ptr->group.execute  = set_execute(&perm[1]);
 
-		*isdir = S_ISDIR(stbuf.st_mode);
+	/* others */
+	ptr->others.read    = set_read(&perm[2]);
+	ptr->others.write   = set_write(&perm[2]);
+	ptr->others.execute = set_execute(&perm[2]);
 }
 
 void
-set_rwx(char *target, const char n, const bool special, const char lower, const char upper)
+get(const char *file, struct _octal *ptr)
 {
-	if (n == '4' ||
-		n == '5' ||
-		n == '6' ||
-		n == '7') {
-		target[0] = 'r';
+	struct stat stbuf;
+
+	if (stat(file, &stbuf) == -1) {
+		fprintf(stderr, "%s: %s: %s\n", progname, file, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	ptr->special.setuid = (stbuf.st_mode & S_ISUID);
+	ptr->special.setgid = (stbuf.st_mode & S_ISGID);
+	ptr->special.sticky = (stbuf.st_mode & S_ISVTX);
+
+	ptr->isdir = S_ISDIR(stbuf.st_mode);
+
+	set_perm((stbuf.st_mode & S_IRWXU) + (stbuf.st_mode & S_IRWXG) +
+			 (stbuf.st_mode & S_IRWXO), ptr);
+}
+
+void
+render_char(const bool read,    const bool write,
+			const bool execute, const bool special,
+			const char lower,   const char upper)
+{
+	if (read) {
+		printf("%s%sr%s", BOLD, COLOR_READ, RESET);
 	} else {
-		target[0] = '-';
+		printf("%s-%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (n == '2' ||
-		n == '3' ||
-		n == '6' ||
-		n == '7') {
-		target[1] = 'w';
+	if (write) {
+		printf("%s%sw%s", BOLD, COLOR_WRITE, RESET);
 	} else {
-		target[1] = '-';
+		printf("%s-%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (n == '1' ||
-		n == '3' ||
-		n == '5' ||
-		n == '7') {
-		target[2] = special ? lower : 'x';
+	if (execute) {
+		if (special) {
+			printf("%s%s%c%s", BOLD, COLOR_SPECIAL, lower, RESET);
+		} else {
+			printf("%s%sx%s", BOLD, COLOR_EXECUTE, RESET);
+		}
 	} else {
-		target[2] = special ? upper : '-';
+		if (special) {
+			printf("%s%s%c%s", BOLD, COLOR_SPECIAL, upper, RESET);
+		} else {
+			printf("%s-%s", COLOR_GRAYED_OUT, RESET);
+		}
 	}
-
-	target[3] = '\0';
 }
 
 void
-setspecial(const char n, bool *setuid, bool *setgid, bool *sticky)
+render_perm(const char *label, const bool read,
+			const bool write,  const bool execute)
 {
-	if (n == '4' ||
-		n == '5' ||
-		n == '6' ||
-		n == '7') {
-		*setuid = true;
+	puts("├────────────┼──────────────────────┤");
+	printf("│ %s%-11s%s│", COLOR_TYPE, label, RESET);
+
+	if (read) {
+		printf("%s%s read%s", BOLD, COLOR_READ, RESET);
+	} else {
+		printf("%s read%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (n == '2' ||
-		n == '3' ||
-		n == '6' ||
-		n == '7') {
-		*setgid = true;
+	if (write) {
+		printf("%s%s write%s", BOLD, COLOR_WRITE, RESET);
+	} else {
+		printf("%s write%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (n == '1' ||
-		n == '3' ||
-		n == '5' ||
-		n == '7') {
-		*sticky = true;
+	if (execute) {
+		printf("%s%s execute%s   │\n", BOLD, COLOR_EXECUTE, RESET);
+	} else {
+		printf("%s execute%s   │\n", COLOR_GRAYED_OUT, RESET);
 	}
 }
 
 void
-tosymbolic(char *target, const char *n)
+render_special(const bool b, const char *s)
 {
-	bool setuid = false;
-	bool setgid = false;
-	bool sticky = false;
-
-	if (strlen(n) == 4) {
-		setspecial(*n, &setuid, &setgid, &sticky);
-		n++;
+	if (b) {
+		printf("%s%s %s%s", BOLD, COLOR_SPECIAL, s, RESET);
+	} else {
+		printf("%s %s%s", COLOR_GRAYED_OUT, s, RESET);
 	}
-
-	set_rwx(target,     *n,       setuid, 's', 'S');
-	set_rwx(&target[3], *(n + 1), setgid, 's', 'S');
-	set_rwx(&target[6], *(n + 2), sticky, 't', 'T');
 }
 
 void
-render(const char *s, const bool isdir)
+render(struct _octal *ptr)
 {
 	puts("┌────────────┬──────────────────────┐");
 	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
-	if (isdir) {
+
+	if (ptr->isdir) {
 		printf("%s%sd%s", BOLD, COLOR_DIRECTORY, RESET);
 	}
-	int i;
-	for (i = 0; s[i] != '\0'; i++) {
-		switch(s[i]) {
-			case 'r':
-				printf("%s%s%c%s", BOLD, COLOR_READ, s[i], RESET);
-				break;
-			case 'w':
-				printf("%s%s%c%s", BOLD, COLOR_WRITE, s[i], RESET);
-				break;
-			case 'x':
-				printf("%s%s%c%s", BOLD, COLOR_EXECUTE, s[i], RESET);
-				break;
-			case 's':
-			case 'S':
-			case 't':
-			case 'T':
-				printf("%s%s%c%s", BOLD, COLOR_SPECIAL, s[i], RESET);
-				break;
-			case '-':
-				printf("%s%s%c%s", BOLD, COLOR_GRAYED_OUT, s[i], RESET);
-				break;
-		}
-	}
-	if (!isdir) {
+
+	render_char(ptr->user.read,      ptr->user.write,
+				ptr->user.execute,   ptr->special.setuid,
+				's', 'S');
+	render_char(ptr->group.read,     ptr->group.write,
+				ptr->group.execute,  ptr->special.setgid,
+				's', 'S');
+	render_char(ptr->others.read,    ptr->others.write,
+				ptr->others.execute, ptr->special.sticky,
+				't', 'T');
+
+	if (!ptr->isdir) {
 		putchar(' ');
 	}
+
 	puts("           │");
-	bool setuid = false;
-	bool setgid = false;
-	bool sticky = false;
-	for (i = 0; i < 3; i++) {
-		puts("├────────────┼──────────────────────┤");
-		printf("│ %s", COLOR_TYPE);
-		switch(i) {
-			case 0:
-				printf("User       ");
-				break;
-			case 1:
-				printf("Group      ");
-				break;
-			case 2:
-				printf("Others     ");
-				break;
-		}
-		printf("%s│", RESET);
-		if (*s == 'r') {
-			printf("%s%s read%s", BOLD, COLOR_READ, RESET);
-		} else {
-			printf("%s read%s", COLOR_GRAYED_OUT, RESET);
-		}
-		s++;
-		if (*s == 'w') {
-			printf("%s%s write%s", BOLD, COLOR_WRITE, RESET);
-		} else {
-			printf("%s write%s", COLOR_GRAYED_OUT, RESET);
-		}
-		s++;
-		switch(*s) {
-			case 'x':
-				printf("%s%s execute%s", BOLD, COLOR_EXECUTE, RESET);
-				break;
-			case 's':
-				printf("%s%s execute%s", BOLD, COLOR_EXECUTE, RESET);
-				if (i == 0) {
-					setuid = true;
-				} else {
-					setgid = true;
-				}
-				break;
-			case 't':
-				printf("%s%s execute%s", BOLD, COLOR_EXECUTE, RESET);
-				sticky = true;
-				break;
-			case 'S':
-				printf("%s execute%s", COLOR_GRAYED_OUT, RESET);
-				if (i == 0) {
-					setuid = true;
-				} else {
-					setgid = true;
-				}
-				break;
-			case 'T':
-				printf("%s execute%s", COLOR_GRAYED_OUT, RESET);
-				sticky = true;
-				break;
-			default:
-				printf("%s execute%s", COLOR_GRAYED_OUT, RESET);
-				break;
-		}
-		s++;
-		puts("   │");
-	}
+
+	render_perm("User",            ptr->user.read,
+				ptr->user.write,   ptr->user.execute);
+	render_perm("Group",           ptr->group.read,
+				ptr->group.write,  ptr->group.execute);
+	render_perm("Others",          ptr->others.read,
+				ptr->others.write, ptr->others.execute);
+
 	puts("├────────────┼──────────────────────┤");
 	printf("│ %sAttributes%s │", COLOR_TYPE, RESET);
-	if (setuid) {
-		printf("%s%s setuid%s", BOLD, COLOR_SPECIAL, RESET);
-	} else {
-		printf("%s setuid%s", COLOR_GRAYED_OUT, RESET);
-	}
-	if (setgid) {
-		printf("%s%s setgid%s", BOLD, COLOR_SPECIAL, RESET);
-	} else {
-		printf("%s setgid%s", COLOR_GRAYED_OUT, RESET);
-	}
-	if (sticky) {
-		printf("%s%s sticky%s", BOLD, COLOR_SPECIAL, RESET);
-	} else {
-		printf("%s sticky%s", COLOR_GRAYED_OUT, RESET);
-	}
+
+	render_special(ptr->special.setuid, "setuid");
+	render_special(ptr->special.setgid, "setgid");
+	render_special(ptr->special.sticky, "sticky");
+
 	puts(" │");
 	puts("└────────────┴──────────────────────┘");
+}
+
+void
+run(const char *file)
+{
+	struct _octal octal;
+	get(file, &octal);
+	render(&octal);
 }
 
 void
 usage(const int status)
 {
 	fprintf(stderr,
-			"Usage: %s [OPTIONS] [PERMISSION]\n"
-			"       %s [OPTIONS] [FILE]\n"
+			"Usage: %s [OPTIONS] [FILE]...\n"
 			"\n"
 			"Options:\n"
 			"  -h, --help    Display this help message and exit\n",
@@ -277,48 +246,29 @@ usage(const int status)
 }
 
 int
-main(int argc, char *argv[])
+main(int argc, char **argv)
 {
-	int pos;
 	if (argc == 1) {
-		pos = 0; /* No arguments */
-	} else {
-		pos = 1; /* argv[1] */
+		run(get_currentdir());
+		return EXIT_SUCCESS;
 	}
 
 	int i;
+	bool optend = false;
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+		if (optend) {
+			run(argv[i]);
+		} else if (strcmp("--", argv[i]) == 0) {
+			optend = true;
+		} else if (strcmp("-h", argv[i]) == 0 || strcmp("--help", argv[i]) == 0) {
 			usage(EXIT_SUCCESS);
-		} else if (strcmp(argv[i], "--") == 0) {
-			if (argc == 3) {
-				pos = 2; /* argv[2] */
-				break;
-			} else {
-				usage(EXIT_FAILURE);
-			}
-		} else if (*argv[i] == '-') {
+		} else if ('-' == *argv[i]) {
 			fprintf(stderr, "%s: Unknown option: \"%s\"\n", progname, argv[i]);
 			return EXIT_FAILURE;
-		} else if (argc != 2) {
-			usage(EXIT_FAILURE);
+		} else {
+			run(argv[i]);
 		}
 	}
-
-	char perm[5];
-	bool isdir = false;
-	if (pos == 0) {
-		file_perm(perm, sizeof(perm), get_currentdir(), &isdir);
-	} else if (isperm(argv[pos])) {
-		strcpy(perm, argv[pos]);
-	} else {
-		file_perm(perm, sizeof(perm), argv[pos], &isdir);
-	}
-
-	char full[10];
-	tosymbolic(full, perm);
-
-	render(full, isdir);
 
 	return EXIT_SUCCESS;
 }

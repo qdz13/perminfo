@@ -15,7 +15,6 @@ sudo make install
 The colors can be changed by editing config.h.
 
 ## Usage
-* Display permissions: `perminfo 755`
 * Display file permissions: `perminfo example.txt`
 * Display directory permissions: `perminfo /path/to/dir`
 * Display help messages: `perminfo --help`
