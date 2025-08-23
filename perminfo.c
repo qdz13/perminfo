@@ -241,7 +241,7 @@ usage(const int status)
 			"\n"
 			"Options:\n"
 			"  -h, --help    Display this help message and exit\n",
-			progname, progname);
+			progname);
 	exit(status);
 }
 
