@@ -69,6 +69,8 @@ set_rwx(enum Rwx type, const char *perm)
 					'3' == *perm ||
 					'5' == *perm ||
 					'7' == *perm);
+		default:
+			exit(EXIT_FAILURE);
 	}
 }
 
