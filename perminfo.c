@@ -11,30 +11,23 @@
 
 const char *progname = "perminfo";
 
-struct _rwx {
-	bool read;
-	bool write;
-	bool execute;
-};
-
-struct _special {
-	bool setuid;
-	bool setgid;
-	bool sticky;
-};
-
-struct _permission {
-	bool isdir;
-	struct _rwx user;
-	struct _rwx group;
-	struct _rwx others;
-	struct _special special;
+enum Type {
+	USER,
+	GROUP,
+	OTHERS,
+	SPECIAL
 };
 
 enum Rwx {
 	READ,
 	WRITE,
 	EXECUTE
+};
+
+enum Special {
+	SETUID,
+	SETGID,
+	STICKY
 };
 
 const char *
@@ -51,53 +44,43 @@ get_currentdir(void)
 }
 
 bool
-set_rwx(enum Rwx type, const char *perm)
+set_rwx(enum Rwx type, const int perm)
 {
 	switch (type) {
 		case READ:
-			return ('4' == *perm ||
-					'5' == *perm ||
-					'6' == *perm ||
-					'7' == *perm);
+			return (4 == perm ||
+					5 == perm ||
+					6 == perm ||
+					7 == perm);
 		case WRITE:
-			return ('2' == *perm ||
-					'3' == *perm ||
-					'6' == *perm ||
-					'7' == *perm);
+			return (2 == perm ||
+					3 == perm ||
+					6 == perm ||
+					7 == perm);
 		case EXECUTE:
-			return ('1' == *perm ||
-					'3' == *perm ||
-					'5' == *perm ||
-					'7' == *perm);
+			return (1 == perm ||
+					3 == perm ||
+					5 == perm ||
+					7 == perm);
 		default:
 			exit(EXIT_FAILURE);
 	}
 }
 
 void
-set_perm(const int octalnum, struct _permission *ptr)
+set_perm(const int octalnum, const int divisor, bool *p)
 {
-	char perm[4];
-	snprintf(perm, sizeof(perm), "%o", octalnum);
+	char tmp[4];
+	snprintf(tmp, sizeof(tmp), "%o", octalnum);
+	int perm = atoi(tmp) / divisor;
 
-	/* user */
-	ptr->user.read      = set_rwx(READ, perm);
-	ptr->user.write     = set_rwx(WRITE, perm);
-	ptr->user.execute   = set_rwx(EXECUTE, perm);
-
-	/* group */
-	ptr->group.read     = set_rwx(READ, &perm[1]);
-	ptr->group.write    = set_rwx(WRITE, &perm[1]);
-	ptr->group.execute  = set_rwx(EXECUTE, &perm[1]);
-
-	/* others */
-	ptr->others.read    = set_rwx(READ, &perm[2]);
-	ptr->others.write   = set_rwx(WRITE, &perm[2]);
-	ptr->others.execute = set_rwx(EXECUTE, &perm[2]);
+	p[READ]    = set_rwx(READ, perm);
+	p[WRITE]   = set_rwx(WRITE, perm);
+	p[EXECUTE] = set_rwx(EXECUTE, perm);
 }
 
 void
-get(const char *file, struct _permission *ptr)
+get(const char *file, bool p[][3], bool *isdir)
 {
 	struct stat stbuf;
 
@@ -106,34 +89,33 @@ get(const char *file, struct _permission *ptr)
 		exit(EXIT_FAILURE);
 	}
 
-	ptr->special.setuid = (stbuf.st_mode & S_ISUID);
-	ptr->special.setgid = (stbuf.st_mode & S_ISGID);
-	ptr->special.sticky = (stbuf.st_mode & S_ISVTX);
+	p[SPECIAL][SETUID] = (stbuf.st_mode & S_ISUID);
+	p[SPECIAL][SETGID] = (stbuf.st_mode & S_ISGID);
+	p[SPECIAL][STICKY] = (stbuf.st_mode & S_ISVTX);
 
-	ptr->isdir = S_ISDIR(stbuf.st_mode);
+	*isdir = S_ISDIR(stbuf.st_mode);
 
-	set_perm((stbuf.st_mode & S_IRWXU) + (stbuf.st_mode & S_IRWXG) +
-			 (stbuf.st_mode & S_IRWXO), ptr);
+	set_perm(stbuf.st_mode & S_IRWXU, 100, p[USER]);
+	set_perm(stbuf.st_mode & S_IRWXG,  10, p[GROUP]);
+	set_perm(stbuf.st_mode & S_IRWXO,   1, p[OTHERS]);
 }
 
 void
-render_char(const bool read,    const bool write,
-			const bool execute, const bool special,
-			const char lower,   const char upper)
+render_char(const bool *p, const bool special, const char lower, const char upper)
 {
-	if (read) {
+	if (p[READ]) {
 		printf("%s%sr%s", BOLD, COLOR_READ, RESET);
 	} else {
 		printf("%s-%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (write) {
+	if (p[WRITE]) {
 		printf("%s%sw%s", BOLD, COLOR_WRITE, RESET);
 	} else {
 		printf("%s-%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (execute) {
+	if (p[EXECUTE]) {
 		if (special) {
 			printf("%s%s%c%s", BOLD, COLOR_SPECIAL, lower, RESET);
 		} else {
@@ -149,25 +131,24 @@ render_char(const bool read,    const bool write,
 }
 
 void
-render_perm(const char *label, const bool read,
-			const bool write,  const bool execute)
+render_perm(const char *label, const bool *p)
 {
 	puts("├────────────┼──────────────────────┤");
 	printf("│ %s%-11s%s│", COLOR_TYPE, label, RESET);
 
-	if (read) {
+	if (p[READ]) {
 		printf("%s%s read%s", BOLD, COLOR_READ, RESET);
 	} else {
 		printf("%s read%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (write) {
+	if (p[WRITE]) {
 		printf("%s%s write%s", BOLD, COLOR_WRITE, RESET);
 	} else {
 		printf("%s write%s", COLOR_GRAYED_OUT, RESET);
 	}
 
-	if (execute) {
+	if (p[EXECUTE]) {
 		printf("%s%s execute%s   │\n", BOLD, COLOR_EXECUTE, RESET);
 	} else {
 		printf("%s execute%s   │\n", COLOR_GRAYED_OUT, RESET);
@@ -185,44 +166,35 @@ render_special(const bool b, const char *s)
 }
 
 void
-render(struct _permission *ptr)
+render(const bool p[][3], const bool isdir)
 {
 	puts("┌────────────┬──────────────────────┐");
 	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
 
-	if (ptr->isdir) {
+	if (isdir) {
 		printf("%s%sd%s", BOLD, COLOR_DIRECTORY, RESET);
 	}
 
-	render_char(ptr->user.read,      ptr->user.write,
-				ptr->user.execute,   ptr->special.setuid,
-				's', 'S');
-	render_char(ptr->group.read,     ptr->group.write,
-				ptr->group.execute,  ptr->special.setgid,
-				's', 'S');
-	render_char(ptr->others.read,    ptr->others.write,
-				ptr->others.execute, ptr->special.sticky,
-				't', 'T');
+	render_char(p[USER],   p[SPECIAL][SETUID], 's', 'S');
+	render_char(p[GROUP],  p[SPECIAL][SETGID], 's', 'S');
+	render_char(p[OTHERS], p[SPECIAL][STICKY], 't', 'T');
 
-	if (!ptr->isdir) {
+	if (!isdir) {
 		putchar(' ');
 	}
 
 	puts("           │");
 
-	render_perm("User",            ptr->user.read,
-				ptr->user.write,   ptr->user.execute);
-	render_perm("Group",           ptr->group.read,
-				ptr->group.write,  ptr->group.execute);
-	render_perm("Others",          ptr->others.read,
-				ptr->others.write, ptr->others.execute);
+	render_perm("User",   p[USER]);
+	render_perm("Group",  p[GROUP]);
+	render_perm("Others", p[OTHERS]);
 
 	puts("├────────────┼──────────────────────┤");
 	printf("│ %sAttributes%s │", COLOR_TYPE, RESET);
 
-	render_special(ptr->special.setuid, "setuid");
-	render_special(ptr->special.setgid, "setgid");
-	render_special(ptr->special.sticky, "sticky");
+	render_special(p[SPECIAL][SETUID], "setuid");
+	render_special(p[SPECIAL][SETGID], "setgid");
+	render_special(p[SPECIAL][STICKY], "sticky");
 
 	puts(" │");
 	puts("└────────────┴──────────────────────┘");
@@ -231,9 +203,10 @@ render(struct _permission *ptr)
 void
 run(const char *file)
 {
-	struct _permission octal;
-	get(file, &octal);
-	render(&octal);
+	bool isdir;
+	bool octal[4][3];
+	get(file, octal, &isdir);
+	render(octal, isdir);
 }
 
 void
