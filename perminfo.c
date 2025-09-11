@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -101,7 +102,7 @@ get(const char *file, bool p[][3], bool *isdir)
 }
 
 void
-render_char(const bool *p, const bool special, const char lower, const char upper)
+render_char(const bool *p, const bool special, const char lower)
 {
 	if (p[READ]) {
 		printf("%s%sr%s", BOLD, COLOR_READ, RESET);
@@ -123,7 +124,7 @@ render_char(const bool *p, const bool special, const char lower, const char uppe
 		}
 	} else {
 		if (special) {
-			printf("%s%s%c%s", BOLD, COLOR_SPECIAL, upper, RESET);
+			printf("%s%s%c%s", BOLD, COLOR_SPECIAL, toupper(lower), RESET);
 		} else {
 			printf("%s-%s", COLOR_GRAYED_OUT, RESET);
 		}
@@ -175,9 +176,9 @@ render(const bool p[][3], const bool isdir)
 		printf("%s%sd%s", BOLD, COLOR_DIRECTORY, RESET);
 	}
 
-	render_char(p[USER],   p[SPECIAL][SETUID], 's', 'S');
-	render_char(p[GROUP],  p[SPECIAL][SETGID], 's', 'S');
-	render_char(p[OTHERS], p[SPECIAL][STICKY], 't', 'T');
+	render_char(p[USER],   p[SPECIAL][SETUID], 's');
+	render_char(p[GROUP],  p[SPECIAL][SETGID], 's');
+	render_char(p[OTHERS], p[SPECIAL][STICKY], 't');
 
 	if (!isdir) {
 		putchar(' ');
