@@ -134,8 +134,8 @@ render_char(const bool *p, const bool special, const char lower)
 void
 render_perm(const char *label, const bool *p)
 {
-	puts("├────────────┼──────────────────────┤");
-	printf("│ %s%-11s%s│", COLOR_TYPE, label, RESET);
+	printf("├────────────┼──────────────────────┤\n"
+		   "│ %s%-11s%s│", COLOR_TYPE, label, RESET);
 
 	if (p[READ]) {
 		printf("%s%s read%s", BOLD, COLOR_READ, RESET);
@@ -169,8 +169,8 @@ render_special(const bool b, const char *s)
 void
 render(const bool p[][3], const bool isdir)
 {
-	puts("┌────────────┬──────────────────────┐");
-	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
+	printf("┌────────────┬──────────────────────┐\n"
+		   "│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
 
 	if (isdir) {
 		printf("%s%sd%s", BOLD, COLOR_DIRECTORY, RESET);
@@ -190,15 +190,15 @@ render(const bool p[][3], const bool isdir)
 	render_perm("Group",  p[GROUP]);
 	render_perm("Others", p[OTHERS]);
 
-	puts("├────────────┼──────────────────────┤");
-	printf("│ %sAttributes%s │", COLOR_TYPE, RESET);
+	printf("├────────────┼──────────────────────┤\n"
+		   "│ %sAttributes%s │", COLOR_TYPE, RESET);
 
 	render_special(p[SPECIAL][SETUID], "setuid");
 	render_special(p[SPECIAL][SETGID], "setgid");
 	render_special(p[SPECIAL][STICKY], "sticky");
 
-	puts(" │");
-	puts("└────────────┴──────────────────────┘");
+	printf(" │\n"
+		   "└────────────┴──────────────────────┘\n");
 }
 
 void
