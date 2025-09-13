@@ -12,7 +12,8 @@ cd perminfo
 make
 sudo make install
 ```
-The colors can be changed by editing config.h.
+> [!TIP]
+> The colors can be changed by editing config.h.
 
 ## Usage
 * Display file permissions: `perminfo example.txt`

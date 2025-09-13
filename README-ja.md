@@ -12,7 +12,8 @@ cd perminfo
 make
 sudo make install
 ```
-色はconfig.hを編集することで変更できます。
+> [!TIP]
+> 色はconfig.hを編集することで変更できます。
 
 ## 使い方
 * ファイルのパーミッションを表示: `perminfo example.txt`
