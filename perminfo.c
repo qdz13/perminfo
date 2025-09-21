@@ -11,6 +11,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
+const char *version  = "3.0.0";
 
 enum Type {
 	USER,
@@ -214,10 +215,11 @@ void
 usage(const int status)
 {
 	fprintf(stderr,
-			"Usage: %s [OPTION] [FILE]...\n"
+			"Usage: %s [-hv] [file ...]\n"
 			"\n"
-			"Option:\n"
-			"  -h, --help    Display this help message and exit\n",
+			"Options:\n"
+			"  -h, --help     Display this help message and exit\n"
+			"  -v, --version  Display version information and exit\n",
 			progname);
 	exit(status);
 }
@@ -239,6 +241,9 @@ main(int argc, char **argv)
 			optend = true;
 		} else if (strcmp("-h", argv[i]) == 0 || strcmp("--help", argv[i]) == 0) {
 			usage(EXIT_SUCCESS);
+		} else if (strcmp("-v", argv[i]) == 0 || strcmp("--version", argv[i]) == 0) {
+			printf("%s %s\n", progname, version);
+			return EXIT_SUCCESS;
 		} else if ('-' == *argv[i]) {
 			fprintf(stderr, "%s: Unknown option: \"%s\"\n", progname, argv[i]);
 			return EXIT_FAILURE;

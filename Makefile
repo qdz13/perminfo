@@ -1,4 +1,5 @@
 PREFIX = /usr/local
+MANPREFIX = ${PREFIX}/share/man
 CC = cc
 CFLAGS = -Wall -Wextra -O2
 LDFLAGS =
@@ -12,9 +13,12 @@ perminfo:
 install: perminfo
 	mkdir -p ${DESTDIR}${PREFIX}/bin
 	install -Dm755 perminfo ${DESTDIR}${PREFIX}/bin/perminfo
+	mkdir -p ${DESTDIR}${MANPREFIX}/man1
+	install -Dm644 perminfo.1 ${DESTDIR}${MANPREFIX}/man1/perminfo.1
 
 uninstall:
 	${RM} ${DESTDIR}${PREFIX}/bin/perminfo
+	${RM} ${DESTDIR}${MANPREFIX}/man1/perminfo.1
 
 clean:
 	${RM} perminfo
