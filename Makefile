@@ -17,8 +17,7 @@ install: perminfo
 	install -Dm644 perminfo.1 ${DESTDIR}${MANPREFIX}/man1/perminfo.1
 
 uninstall:
-	${RM} ${DESTDIR}${PREFIX}/bin/perminfo
-	${RM} ${DESTDIR}${MANPREFIX}/man1/perminfo.1
+	${RM} ${DESTDIR}${PREFIX}/bin/perminfo ${DESTDIR}${MANPREFIX}/man1/perminfo.1
 
 clean:
 	${RM} perminfo
