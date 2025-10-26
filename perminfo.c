@@ -11,7 +11,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.0.0";
+const char *version  = "3.1.0";
 
 enum Type {
 	USER,
@@ -168,9 +168,19 @@ render_special(const bool b, const char *s)
 }
 
 void
-render(const bool p[][3], const bool isdir)
+render(const char *file, const bool p[][3], const bool isdir)
 {
 	printf("┌────────────┬──────────────────────┐\n"
+		   "│ %sFilename%s   │ ", COLOR_TYPE, RESET);
+
+	if (strlen(file) > 20) {
+		printf("%s...%s%-17s%s │\n", COLOR_GRAYED_OUT, COLOR_FILENAME,
+			   strlen(file) - 17 + file, RESET);
+	} else {
+		printf("%s%-20s%s │\n", COLOR_FILENAME, file, RESET);
+	}
+
+	printf("├────────────┼──────────────────────┤\n"
 		   "│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
 
 	if (isdir) {
@@ -208,7 +218,7 @@ run(const char *file)
 	bool isdir;
 	bool octal[4][3];
 	get(file, octal, &isdir);
-	render(octal, isdir);
+	render(file, octal, isdir);
 }
 
 void
