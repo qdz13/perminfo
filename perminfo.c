@@ -11,7 +11,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.1.0";
+const char *version  = "3.2.0";
 
 enum Type {
 	USER,
@@ -69,7 +69,7 @@ set_rwx(enum Rwx type, const int perm)
 	}
 }
 
-void
+char
 set_perm(const int octalnum, const int divisor, bool *p)
 {
 	char tmp[4];
@@ -79,10 +79,12 @@ set_perm(const int octalnum, const int divisor, bool *p)
 	p[READ]    = set_rwx(READ, perm);
 	p[WRITE]   = set_rwx(WRITE, perm);
 	p[EXECUTE] = set_rwx(EXECUTE, perm);
+
+	return '0' + perm;
 }
 
 void
-get(const char *file, bool p[][3], bool *isdir)
+get(const char *file, char octal[], bool p[][3], bool *isdir)
 {
 	struct stat stbuf;
 
@@ -94,12 +96,14 @@ get(const char *file, bool p[][3], bool *isdir)
 	p[SPECIAL][SETUID] = (stbuf.st_mode & S_ISUID);
 	p[SPECIAL][SETGID] = (stbuf.st_mode & S_ISGID);
 	p[SPECIAL][STICKY] = (stbuf.st_mode & S_ISVTX);
+	octal[0] = '0' + 4 * p[SPECIAL][SETUID] + 2 * p[SPECIAL][SETGID] + p[SPECIAL][STICKY];
 
 	*isdir = S_ISDIR(stbuf.st_mode);
 
-	set_perm(stbuf.st_mode & S_IRWXU, 100, p[USER]);
-	set_perm(stbuf.st_mode & S_IRWXG,  10, p[GROUP]);
-	set_perm(stbuf.st_mode & S_IRWXO,   1, p[OTHERS]);
+	octal[1] = set_perm(stbuf.st_mode & S_IRWXU, 100, p[USER]);
+	octal[2] = set_perm(stbuf.st_mode & S_IRWXG,  10, p[GROUP]);
+	octal[3] = set_perm(stbuf.st_mode & S_IRWXO,   1, p[OTHERS]);
+	octal[4] = '\0';
 }
 
 void
@@ -168,7 +172,7 @@ render_special(const bool b, const char *s)
 }
 
 void
-render(const char *file, const bool p[][3], const bool isdir)
+render(const char *file, const char *octal, const bool p[][3], const bool isdir)
 {
 	printf("┌────────────┬──────────────────────┐\n"
 		   "│ %sFilename%s   │ ", COLOR_TYPE, RESET);
@@ -179,6 +183,12 @@ render(const char *file, const bool p[][3], const bool isdir)
 	} else {
 		printf("%s%-20s%s │\n", COLOR_FILENAME, file, RESET);
 	}
+
+	printf("├────────────┼──────────────────────┤\n"
+		   "│ %sOctal      │ %s%c%s%c%s%c%s%-17c%s │\n",
+		   COLOR_TYPE, COLOR_SPECIAL, octal[0], COLOR_READ, octal[1],
+		   COLOR_WRITE, octal[2], COLOR_EXECUTE, octal[3], RESET);
+
 
 	printf("├────────────┼──────────────────────┤\n"
 		   "│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
@@ -216,9 +226,10 @@ void
 run(const char *file)
 {
 	bool isdir;
-	bool octal[4][3];
-	get(file, octal, &isdir);
-	render(file, octal, isdir);
+	char octal[5];
+	bool perms[4][3];
+	get(file, octal, perms, &isdir);
+	render(file, octal, perms, isdir);
 }
 
 void

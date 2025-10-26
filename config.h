@@ -8,8 +8,8 @@
 #define BOLD    "\033[1m"
 #define RESET   "\033[0m"
 
-#define COLOR_FILENAME   RESET
 #define COLOR_TYPE       CYAN
+#define COLOR_FILENAME   RESET
 #define COLOR_READ       YELLOW
 #define COLOR_WRITE      RED
 #define COLOR_EXECUTE    GREEN
