@@ -10,6 +10,7 @@
 
 #define COLOR_TYPE       CYAN
 #define COLOR_FILENAME   RESET
+#define COLOR_OCTAL      RESET
 #define COLOR_READ       YELLOW
 #define COLOR_WRITE      RED
 #define COLOR_EXECUTE    GREEN

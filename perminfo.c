@@ -185,9 +185,7 @@ render(const char *file, const char *octal, const bool p[][3], const bool isdir)
 	}
 
 	printf("├────────────┼──────────────────────┤\n"
-		   "│ %sOctal      │ %s%c%s%c%s%c%s%-17c%s │\n",
-		   COLOR_TYPE, COLOR_SPECIAL, octal[0], COLOR_READ, octal[1],
-		   COLOR_WRITE, octal[2], COLOR_EXECUTE, octal[3], RESET);
+		   "│ %sOctal      │ %s%-20s%s │\n", COLOR_TYPE, COLOR_OCTAL, octal, RESET);
 
 
 	printf("├────────────┼──────────────────────┤\n"
