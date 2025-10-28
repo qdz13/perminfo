@@ -1,4 +1,4 @@
-.Dd September 21, 2025
+.Dd October 29, 2025
 .Dt PERMINFO 1
 .Os
 .Sh NAME
@@ -6,7 +6,7 @@
 .Nd Display permission information
 .Sh SYNOPSIS
 .Nm perminfo
-.Op Fl hv
+.Op Fl hlv
 .Op Ar file ...
 .Sh DESCRIPTION
 .Nm
@@ -17,6 +17,8 @@ Supported options:
 .Bl -tag -width Ds
 .It Fl h , Fl Fl help
 Display help message
+.It Fl l , Fl Fl follow-links
+Follow symbolic links
 .It Fl v , Fl Fl version
 Display version information
 .El

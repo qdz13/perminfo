@@ -11,7 +11,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.2.0";
+const char *version  = "3.3.0";
 
 enum Type {
 	USER,
@@ -84,11 +84,16 @@ set_perm(const int octalnum, const int divisor, bool *p)
 }
 
 void
-get(const char *file, char octal[], bool p[][3], bool *isdir)
+get(const char *file, const bool links, char octal[], bool p[][3], bool *isdir, bool *islnk)
 {
 	struct stat stbuf;
 
-	if (stat(file, &stbuf) == -1) {
+	if (links) {
+		if (stat(file, &stbuf) == -1) {
+			fprintf(stderr, "%s: %s: %s\n", progname, file, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	} else if (lstat(file, &stbuf) == -1) {
 		fprintf(stderr, "%s: %s: %s\n", progname, file, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -99,6 +104,7 @@ get(const char *file, char octal[], bool p[][3], bool *isdir)
 	octal[0] = '0' + 4 * p[SPECIAL][SETUID] + 2 * p[SPECIAL][SETGID] + p[SPECIAL][STICKY];
 
 	*isdir = S_ISDIR(stbuf.st_mode);
+	*islnk = S_ISLNK(stbuf.st_mode);
 
 	octal[1] = set_perm(stbuf.st_mode & S_IRWXU, 100, p[USER]);
 	octal[2] = set_perm(stbuf.st_mode & S_IRWXG,  10, p[GROUP]);
@@ -172,7 +178,7 @@ render_special(const bool b, const char *s)
 }
 
 void
-render(const char *file, const char *octal, const bool p[][3], const bool isdir)
+render(const char *file, const char *octal, const bool p[][3], const bool isdir, const bool islnk)
 {
 	printf("┌────────────┬──────────────────────┐\n"
 		   "│ %sFilename%s   │ ", COLOR_TYPE, RESET);
@@ -193,13 +199,15 @@ render(const char *file, const char *octal, const bool p[][3], const bool isdir)
 
 	if (isdir) {
 		printf("%s%sd%s", BOLD, COLOR_DIRECTORY, RESET);
+	} else if (islnk) {
+		printf("%s%sl%s", BOLD, COLOR_LINK, RESET);
 	}
 
 	render_char(p[USER],   p[SPECIAL][SETUID], 's');
 	render_char(p[GROUP],  p[SPECIAL][SETGID], 's');
 	render_char(p[OTHERS], p[SPECIAL][STICKY], 't');
 
-	if (!isdir) {
+	if (!isdir && !islnk) {
 		putchar(' ');
 	}
 
@@ -221,13 +229,13 @@ render(const char *file, const char *octal, const bool p[][3], const bool isdir)
 }
 
 void
-run(const char *file)
+run(const char *file, const bool links)
 {
-	bool isdir;
+	bool isdir, islnk;
 	char octal[5];
 	bool perms[4][3];
-	get(file, octal, perms, &isdir);
-	render(file, octal, perms, isdir);
+	get(file, links, octal, perms, &isdir, &islnk);
+	render(file, octal, perms, isdir, islnk);
 }
 
 void
@@ -246,8 +254,10 @@ usage(const int status)
 int
 main(int argc, char **argv)
 {
+	bool links = false;
+
 	if (argc == 1) {
-		run(get_currentdir());
+		run(get_currentdir(), links);
 		return EXIT_SUCCESS;
 	}
 
@@ -255,7 +265,7 @@ main(int argc, char **argv)
 	bool optend = false;
 	for (i = 1; i < argc; i++) {
 		if (optend) {
-			run(argv[i]);
+			run(argv[i], links);
 		} else if (strcmp("--", argv[i]) == 0) {
 			optend = true;
 		} else if (strcmp("-h", argv[i]) == 0 || strcmp("--help", argv[i]) == 0) {
@@ -263,11 +273,13 @@ main(int argc, char **argv)
 		} else if (strcmp("-v", argv[i]) == 0 || strcmp("--version", argv[i]) == 0) {
 			printf("%s %s\n", progname, version);
 			return EXIT_SUCCESS;
+		} else if (strcmp("-l", argv[i]) == 0 || strcmp("--follow-links", argv[i]) == 0) {
+			links = true;
 		} else if ('-' == *argv[i]) {
 			fprintf(stderr, "%s: Unknown option: \"%s\"\n", progname, argv[i]);
 			return EXIT_FAILURE;
 		} else {
-			run(argv[i]);
+			run(argv[i], links);
 		}
 	}
 
