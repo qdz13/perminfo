@@ -1,8 +1,10 @@
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +14,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.3.0";
+const char *version  = "3.4.0";
 
 enum Type {
 	USER,
@@ -33,14 +35,25 @@ enum Special {
 	STICKY
 };
 
+void
+die(const char *fmt, ...)
+{
+	fprintf(stderr, "%s: ", progname);
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+	fputc('\n', stderr);
+	exit(EXIT_FAILURE);
+}
+
 const char *
 get_currentdir(void)
 {
 	static char path[PATH_MAX + 1];
 
 	if (!getcwd(path, sizeof(path))) {
-		fprintf(stderr, "%s: Failed to get current directory\n", progname);
-		exit(EXIT_FAILURE);
+		die("Failed to get current directory");
 	}
 
 	return path;
@@ -91,12 +104,10 @@ get(const char *file, const bool links, char octal[], bool p[][3], bool *isdir, 
 
 	if (links) {
 		if (stat(file, &stbuf) == -1) {
-			fprintf(stderr, "%s: %s: %s\n", progname, file, strerror(errno));
-			exit(EXIT_FAILURE);
+			die("%s: %s", file, strerror(errno));
 		}
 	} else if (lstat(file, &stbuf) == -1) {
-		fprintf(stderr, "%s: %s: %s\n", progname, file, strerror(errno));
-		exit(EXIT_FAILURE);
+		die("%s: %s", file, strerror(errno));
 	}
 
 	p[SPECIAL][SETUID] = (stbuf.st_mode & S_ISUID);
@@ -111,6 +122,27 @@ get(const char *file, const bool links, char octal[], bool p[][3], bool *isdir, 
 	octal[2] = set_perm(stbuf.st_mode & S_IRWXG,  10, p[GROUP]);
 	octal[3] = set_perm(stbuf.st_mode & S_IRWXO,   1, p[OTHERS]);
 	octal[4] = '\0';
+}
+
+void
+render_separator(const int width)
+{
+	int i;
+	printf("├────────────┼");
+	for (i = 0; i < width - 15; i++) {
+		printf("─");
+	}
+	printf("┤\n");
+}
+
+void
+render_close(const int n)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		putchar(' ');
+	}
+	printf("│\n");
 }
 
 void
@@ -144,10 +176,10 @@ render_char(const bool *p, const bool special, const char lower)
 }
 
 void
-render_perm(const char *label, const bool *p)
+render_perm(const int width, const char *label, const bool *p)
 {
-	printf("├────────────┼──────────────────────┤\n"
-		   "│ %s%-11s%s│", COLOR_TYPE, label, RESET);
+	render_separator(width);
+	printf("│ %s%-11s%s│", COLOR_TYPE, label, RESET);
 
 	if (p[READ]) {
 		printf("%s%s read%s", BOLD, COLOR_READ, RESET);
@@ -162,10 +194,12 @@ render_perm(const char *label, const bool *p)
 	}
 
 	if (p[EXECUTE]) {
-		printf("%s%s execute%s   │\n", BOLD, COLOR_EXECUTE, RESET);
+		printf("%s%s execute%s", BOLD, COLOR_EXECUTE, RESET);
 	} else {
-		printf("%s execute%s   │\n", COLOR_GRAYED_OUT, RESET);
+		printf("%s execute%s", COLOR_GRAYED_OUT, RESET);
 	}
+
+	render_close(width - 34);
 }
 
 void
@@ -181,22 +215,49 @@ render_special(const bool b, const char *s)
 void
 render(const char *file, const char *octal, const bool p[][3], const bool isdir, const bool islnk)
 {
-	printf("┌────────────┬──────────────────────┐\n"
-		   "│ %sFilename%s   │ ", COLOR_TYPE, RESET);
+	int width = 37; /* Minimum value of required width */
+	struct winsize w;
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != 0) {
+		die("Failed to get terminal width");
+	}
+	const int cols = w.ws_col;
 
-	if (strlen(file) > 20) {
-		printf("%s...%s%-17s%s │\n", COLOR_GRAYED_OUT, COLOR_FILENAME,
-			   strlen(file) - 17 + file, RESET);
-	} else {
-		printf("%s%-20s%s │\n", COLOR_FILENAME, file, RESET);
+	if (cols < width) {
+		die("Terminal width is too small");
 	}
 
-	printf("├────────────┼──────────────────────┤\n"
-		   "│ %sOctal      │ %s%-20s%s │\n", COLOR_TYPE, COLOR_OCTAL, octal, RESET);
+	bool cutfilename = false;
+	if (strlen(file) + 17 > (size_t)width) {
+		if (strlen(file) + 17 > (size_t)cols) {
+			cutfilename = true;
+			width = cols;
+		} else {
+			width = strlen(file) + 17;
+		}
+	}
 
+	printf("┌────────────┬");
+	int i;
+	for (i = 0; i < width - 15; i++) {
+		printf("─");
+	}
+	printf("┐\n"
+		   "│ %sFilename%s   │ ", COLOR_TYPE, RESET);
 
-	printf("├────────────┼──────────────────────┤\n"
-		   "│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
+	if (cutfilename) {
+		printf("%s…%s%s%s │\n", COLOR_GRAYED_OUT, COLOR_FILENAME,
+			   strlen(file) - (width - 18) + file, RESET);
+	} else {
+		printf("%s%s%s", COLOR_FILENAME, file, RESET);
+		render_close(width - (strlen(file) + 16));
+	}
+
+	render_separator(width);
+	printf("│ %sOctal      │ %s%s%s", COLOR_TYPE, COLOR_OCTAL, octal, RESET);
+	render_close(width - 20);
+
+	render_separator(width);
+	printf("│ %sSymbolic%s   │ ", COLOR_TYPE, RESET);
 
 	if (isdir) {
 		printf("%s%sd%s", BOLD, COLOR_DIRECTORY, RESET);
@@ -212,21 +273,24 @@ render(const char *file, const char *octal, const bool p[][3], const bool isdir,
 		putchar(' ');
 	}
 
-	puts("           │");
+	render_close(width - 26);
+	render_perm(width, "User",   p[USER]);
+	render_perm(width, "Group",  p[GROUP]);
+	render_perm(width, "Others", p[OTHERS]);
 
-	render_perm("User",   p[USER]);
-	render_perm("Group",  p[GROUP]);
-	render_perm("Others", p[OTHERS]);
-
-	printf("├────────────┼──────────────────────┤\n"
-		   "│ %sAttributes%s │", COLOR_TYPE, RESET);
+	render_separator(width);
+	printf("│ %sAttributes%s │", COLOR_TYPE, RESET);
 
 	render_special(p[SPECIAL][SETUID], "setuid");
 	render_special(p[SPECIAL][SETGID], "setgid");
 	render_special(p[SPECIAL][STICKY], "sticky");
 
-	printf(" │\n"
-		   "└────────────┴──────────────────────┘\n");
+	render_close(width - 36);
+	printf("└────────────┴");
+	for (i = 0; i < width - 15; i++) {
+		printf("─");
+	}
+	printf("┘\n");
 }
 
 void
@@ -277,8 +341,7 @@ main(int argc, char **argv)
 		} else if (strcmp("-l", argv[i]) == 0 || strcmp("--follow-links", argv[i]) == 0) {
 			links = true;
 		} else if ('-' == *argv[i]) {
-			fprintf(stderr, "%s: Unknown option: \"%s\"\n", progname, argv[i]);
-			return EXIT_FAILURE;
+			die("Unknown option: \"%s\"", argv[i]);
 		} else {
 			run(argv[i], links);
 		}
