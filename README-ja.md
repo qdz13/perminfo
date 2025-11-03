@@ -5,6 +5,9 @@ perminfoはC言語で書かれた、ファイルのパーミッションを表�
 
 <img src="preview.jpg" width="500">
 
+## 必要な物
+* C23コンパイラ
+
 ## インストール
 ```sh
 git clone https://codeberg.org/qdz13/perminfo.git

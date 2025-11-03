@@ -15,7 +15,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.4.1";
+const char *version  = "3.5.0";
 
 enum Type {
 	USER,
@@ -36,7 +36,7 @@ enum Special {
 	STICKY
 };
 
-void
+[[noreturn]] void
 die(const char *fmt, ...)
 {
 	fprintf(stderr, "%s: ", progname);
@@ -304,7 +304,7 @@ run(const char *file, const bool links)
 	render(file, octal, perms, isdir, islnk);
 }
 
-void
+[[noreturn]] void
 usage(const int status)
 {
 	fprintf(stderr,

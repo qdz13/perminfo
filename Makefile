@@ -1,7 +1,7 @@
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 CC = cc
-CFLAGS = -Wall -Wextra -O2
+CFLAGS = -Wall -Wextra -Wimplicit-fallthrough -O2
 LDFLAGS =
 RM = rm -f
 

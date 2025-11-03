@@ -5,6 +5,9 @@ perminfo is simple tool for displaying file permissions written in C.
 
 <img src="preview.jpg" width="500">
 
+## Requirement
+* C23 compiler
+
 ## Installation
 ```sh
 git clone https://codeberg.org/qdz13/perminfo.git
