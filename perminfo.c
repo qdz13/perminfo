@@ -3,6 +3,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <getopt.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,7 +15,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.4.0";
+const char *version  = "3.4.1";
 
 enum Type {
 	USER,
@@ -319,32 +320,40 @@ usage(const int status)
 int
 main(int argc, char **argv)
 {
+	int c, i;
 	bool links = false;
 
-	if (argc == 1) {
+	struct option longopts[] = {
+		{ "help",         no_argument, NULL, 'b' },
+		{ "follow-links", no_argument, NULL, 'l' },
+		{ "version",      no_argument, NULL, 'v' },
+		{ NULL,           0,           NULL,  0  }
+	};
+
+	while ((c = getopt_long(argc, argv, "hlv", longopts, NULL)) != -1) {
+		switch (c) {
+			case 'h':
+				usage(EXIT_SUCCESS);
+			case 'l':
+				links = true;
+				break;
+			case 'v':
+				printf("%s %s\n", progname, version);
+				return EXIT_SUCCESS;
+			default:
+				usage(EXIT_FAILURE);
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (argc == 0) {
 		run(get_currentdir(), links);
 		return EXIT_SUCCESS;
 	}
 
-	int i;
-	bool optend = false;
-	for (i = 1; i < argc; i++) {
-		if (optend) {
-			run(argv[i], links);
-		} else if (strcmp("--", argv[i]) == 0) {
-			optend = true;
-		} else if (strcmp("-h", argv[i]) == 0 || strcmp("--help", argv[i]) == 0) {
-			usage(EXIT_SUCCESS);
-		} else if (strcmp("-v", argv[i]) == 0 || strcmp("--version", argv[i]) == 0) {
-			printf("%s %s\n", progname, version);
-			return EXIT_SUCCESS;
-		} else if (strcmp("-l", argv[i]) == 0 || strcmp("--follow-links", argv[i]) == 0) {
-			links = true;
-		} else if ('-' == *argv[i]) {
-			die("Unknown option: \"%s\"", argv[i]);
-		} else {
-			run(argv[i], links);
-		}
+	for (i = 0; i < argc; i++) {
+		run(argv[i], links);
 	}
 
 	return EXIT_SUCCESS;
