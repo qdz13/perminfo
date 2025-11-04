@@ -53,8 +53,8 @@ get_currentdir(void)
 {
 	static char path[PATH_MAX + 1];
 
-	if (!getcwd(path, sizeof(path))) {
-		die("Failed to get current directory");
+	if (getcwd(path, sizeof(path)) == NULL) {
+		die("%s", strerror(errno));
 	}
 
 	return path;
