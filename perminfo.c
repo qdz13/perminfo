@@ -218,8 +218,8 @@ render(const char *file, const char *octal, const bool p[][3], const bool isdir,
 {
 	int width = 37; /* Minimum value of required width */
 	struct winsize w;
-	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != 0) {
-		die("Failed to get terminal width");
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) {
+		die("ioctl: %s", strerror(errno));
 	}
 	const int cols = w.ws_col;
 
