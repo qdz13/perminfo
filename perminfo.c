@@ -6,7 +6,6 @@
 #include <getopt.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +14,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.5.0";
+const char *version  = "3.6.0";
 
 enum Type {
 	USER,
