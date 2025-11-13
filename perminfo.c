@@ -334,6 +334,7 @@ main(int argc, char **argv)
 		switch (c) {
 			case 'h':
 				usage(EXIT_SUCCESS);
+				break;
 			case 'l':
 				links = true;
 				break;
