@@ -14,7 +14,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.6.0";
+const char *version  = "3.6.1";
 
 enum Type {
 	USER,
@@ -217,7 +217,7 @@ render(const char *file, const char *octal, const bool p[][3], const bool isdir,
 {
 	int width = 37; /* Minimum value of required width */
 	struct winsize w;
-	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) {
+	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &w) == -1) {
 		die("ioctl: %s", strerror(errno));
 	}
 	const int cols = w.ws_col;
