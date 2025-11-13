@@ -6,6 +6,7 @@
 #include <getopt.h>
 #include <limits.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +15,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.6.1";
+const char *version  = "3.7.0";
 
 enum Type {
 	USER,
@@ -35,7 +36,7 @@ enum Special {
 	STICKY
 };
 
-[[noreturn]] void
+void
 die(const char *fmt, ...)
 {
 	fprintf(stderr, "%s: ", progname);
@@ -303,7 +304,7 @@ run(const char *file, const bool links)
 	render(file, octal, perms, isdir, islnk);
 }
 
-[[noreturn]] void
+void
 usage(const int status)
 {
 	fprintf(stderr,
