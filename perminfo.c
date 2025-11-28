@@ -311,8 +311,9 @@ usage(const int status)
 			"Usage: %s [-hv] [file ...]\n"
 			"\n"
 			"Options:\n"
-			"  -h, --help     Display this help message and exit\n"
-			"  -v, --version  Display version information and exit\n",
+			"  -h, --help          Display this help message and exit\n"
+			"  -l, --follow-links  Follow symbolic links\n"
+			"  -v, --version       Display version information and exit\n",
 			progname);
 	exit(status);
 }
