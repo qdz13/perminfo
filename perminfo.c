@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 500
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
@@ -6,7 +8,6 @@
 #include <getopt.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +16,7 @@
 #include "config.h"
 
 const char *progname = "perminfo";
-const char *version  = "3.7.0";
+const char *version  = "3.8.0";
 
 enum Type {
 	USER,
@@ -36,7 +37,7 @@ enum Special {
 	STICKY
 };
 
-void
+[[noreturn]] void
 die(const char *fmt, ...)
 {
 	fprintf(stderr, "%s: ", progname);
@@ -46,18 +47,6 @@ die(const char *fmt, ...)
 	va_end(args);
 	fputc('\n', stderr);
 	exit(EXIT_FAILURE);
-}
-
-const char *
-get_currentdir(void)
-{
-	static char path[PATH_MAX + 1];
-
-	if (getcwd(path, sizeof(path)) == NULL) {
-		die("%s", strerror(errno));
-	}
-
-	return path;
 }
 
 bool
@@ -304,7 +293,7 @@ run(const char *file, const bool links)
 	render(file, octal, perms, isdir, islnk);
 }
 
-void
+[[noreturn]] void
 usage(const int status)
 {
 	fprintf(stderr,
@@ -335,7 +324,6 @@ main(int argc, char **argv)
 		switch (c) {
 			case 'h':
 				usage(EXIT_SUCCESS);
-				break;
 			case 'l':
 				links = true;
 				break;
@@ -350,7 +338,18 @@ main(int argc, char **argv)
 	argv += optind;
 
 	if (argc == 0) {
-		run(get_currentdir(), links);
+		const long pathmax = pathconf(".", _PC_PATH_MAX);
+		if (pathmax == -1) {
+			die("Failed to get the maximum number of bytes in a pathname");
+		}
+
+		char path[pathmax + 1];
+		if (getcwd(path, sizeof(path)) == NULL) {
+			die("%s", strerror(errno));
+		}
+
+		run(path, links);
+
 		return EXIT_SUCCESS;
 	}
 
