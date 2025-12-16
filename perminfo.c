@@ -297,7 +297,7 @@ run(const char *file, const bool links)
 usage(const int status)
 {
 	fprintf(stderr,
-			"Usage: %s [-hv] [file ...]\n"
+			"Usage: %s [-hlv] [file ...]\n"
 			"\n"
 			"Options:\n"
 			"  -h, --help          Display this help message and exit\n"
