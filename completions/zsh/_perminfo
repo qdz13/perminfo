@@ -1,0 +1,7 @@
+#compdef perminfo
+
+_arguments -s -S \
+	'(- *)'{-h,--help}'[Display help message and exit]' \
+	'(-l --follow-links)'{-l,--follow-links}'[Follow symbolic links]' \
+	'(- *)'{-v,--version}'[Display version information and exit]' \
+	'*: :_files'
